@@ -1,0 +1,8 @@
+RT 学术期刊
+T1 担保制度司法解释的规范分析
+A1 高圣平
+JF 清华法学
+YR 2022
+KW 担保;司法解释;规范分析
+AB 本文逐条分析《民法典担保制度司法解释》的规范结构，揭示其解释论基础与可能的体系冲突。
+UL https://kns.cnki.net/kcms2/article/abstract?v=example
