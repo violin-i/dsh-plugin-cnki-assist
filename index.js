@@ -18,6 +18,7 @@ const paperSchema = {
     abstract: { type: 'string' },
     type: { type: 'string' },
     url: { type: 'string' },
+    doi: { type: 'string' },
     pages: { type: 'string' },
     volume: { type: 'string' },
     issue: { type: 'string' },

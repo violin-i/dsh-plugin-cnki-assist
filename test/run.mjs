@@ -124,5 +124,27 @@ test('未知格式抛出带指引的错误', () => {
   assert.throws(() => parseCnkiExport('随便一段话，没有任何可识别的格式。'), /无法识别的导出格式/)
 })
 
+// ---------- 真实导出格式（2026-10 实测知网导出页"自定义"格式，双语标签） ----------
+test('解析真实知网导出文件（Title-题名 双语标签，含摘要）', () => {
+  const text = readFileSync(join(dir, 'fixtures', 'real-custom.txt'), 'utf8')
+  const r = parseCnkiExport(text)
+  assert.equal(r.format, 'cnki-custom')
+  assert.equal(r.count, 3)
+  const [a, b, c] = r.papers
+  assert.equal(a.title, '论利益平衡视角下非恶意违约方的合同解除自由')
+  assert.deepEqual(a.authors, ['李少伟', '吕立波'])
+  assert.equal(a.source, '邵阳学院学报(社会科学版)')
+  assert.equal(a.type, '期刊')
+  assert.equal(a.pub_date, '2026-08-28')
+  assert.deepEqual(a.keywords, ['合同解除', '不适宜强制履行的合同', '金钱债务', '非金钱债务'])
+  assert.ok(a.abstract.includes('第五百八十条'))
+  assert.deepEqual(b.authors, ['陈维一'])
+  assert.equal(b.type, '期刊')
+  assert.ok(b.abstract.includes('司法解除权'))
+  assert.equal(c.type, '硕士')
+  assert.equal(c.pub_date, '2026-06-01')
+  assert.ok(c.abstract.length > 200, '硕士论文长摘要完整保留')
+})
+
 console.log(`\n${passed} passed, ${failed} failed`)
 process.exit(failed ? 1 : 0)

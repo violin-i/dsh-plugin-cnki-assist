@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-cnki-assist",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "CNKI (中国知网) 文献工作流助手 for DeepSeek Harness：检索链接生成、题录导出解析、知网访问守护（拦下载/限速）、合规检索技能。面向法学等文科文献综述场景。",
   "type": "module",
   "main": "index.js",
