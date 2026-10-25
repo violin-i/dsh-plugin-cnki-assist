@@ -1,3 +1,7 @@
 - insert:
     - id: cnki-assist
       name: dsh-plugin-cnki-assist
+    - id: cnki-assist-guard
+      name: dsh-plugin-cnki-assist/guard
+    - id: cnki-assist-skill
+      name: dsh-plugin-cnki-assist/skill
