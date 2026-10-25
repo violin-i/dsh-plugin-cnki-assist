@@ -1,13 +1,33 @@
 # dsh-plugin-cnki-assist
 
-中国知网（CNKI）文献工作流助手，面向 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness)。为法学等文科文献综述场景提供两个工具、一层守护和一个技能：
+中国知网（CNKI）法学文献工作台，面向 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness)。覆盖"找文献 → 筛文献 → 读文献 → 写综述"全链路：两个检索工具 + 一层访问守护 + 一个本地文献库（6 个工具）+ 两个技能。
 
 | 组件 | 类型 | 作用 |
 |---|---|---|
 | `cnki_search_url` | 工具 | 把大白话需求变成知网检索链接：简单关键词 → 结果页直链；专业检索式 → 专业检索页链接。附法学检索策略提示（CSSCI 筛选、被引排序等） |
-| `cnki_parse_export` | 工具 | 解析知网"导出文献"生成的题录 txt（支持自定义 / EndNote / RefWorks / 制表符格式，UTF-8 与 GB18030 编码），返回结构化论文列表 |
-| 知网访问守护 | 门禁 | `tools/pre-execute` 钩子：**拦截一切指向知网下载端点的浏览器调用**（CAJ/PDF/整本下载），并对知网访问限速（默认 12 次/10 分钟、间隔 ≥4 秒），超限自动引导降级到人工导出链路 |
-| `cnki-search` | 技能 | 教会 agent 完整合规检索工作流：多角度检索式 → 浏览器打开结果页 → 只读题录 → 综合排序输出，含验证码/登录页处置与降级链路 |
+| `cnki_parse_export` | 工具 | 解析知网"导出文献"生成的题录 txt（自定义双语标签 / EndNote / RefWorks / 制表符，UTF-8 与 GB18030，含 `\0` 清理），返回结构化论文列表 |
+| 知网访问守护 | 门禁 | `tools/pre-execute` 钩子：拦截指向知网下载端点的浏览器调用（kcms/download、bar/download 等），并限速（默认 12 次/10 分钟、间隔 ≥4 秒），超限自动引导降级到人工导出链路 |
+| `cnki-search` | 技能 | 合规检索工作流：多角度检索式 → 浏览器打开结果页 → 只读题录 → 综合排序输出，含验证码处置、降级链路与精确到按钮的导出步骤 |
+| `law_lib_add` / `list` / `search` / `read` / `citation` / `remove` | 工具（文献库） | 本地文献库：PDF/TXT 入库（pdfjs 中文提取、哈希去重、扫描版拒收提示）、中文 BM25 全文检索、大纲/窗口式阅读、《法学引注手册》与 GB/T 7714 引注生成、移除 |
+| `law-workbench` | 技能 | 文献库工作流：单篇精读卡片（论点/论证路径/方法/可引原文）、观点谱系对比、综述草稿规范、引注元数据补全提示 |
+
+文献库为**纯本地**实现：BM25 检索（中文 bigram）+ 文件型存储（默认 `~/.dsh/law-library/`，可经 profile 的行配置 `libraryDir` 覆盖），零网络、零 API key、零向量模型——个人文献库规模（几十到上百篇）下检索即时返回，全文不出本机。唯一依赖 `pdfjs-dist` 为纯 JS 包，无构建脚本、无原生模块。
+
+## 文献库使用
+
+```text
+你：把 D:\论文\合同无效 这个文件夹里的 PDF 都入库
+AI：law_lib_add → 入库 8 篇
+
+你：总结第一篇的核心论证
+AI：law_lib_read(outline) → 分窗通读 → 输出读书卡片
+
+你：这几篇在"识别标准"上观点有什么分歧？
+AI：law_lib_search(每个争点一轮) → 观点谱系表（标注 [id] 与 chunk 位置）
+
+你：生成综述初稿，引注用法学引注手册
+AI：分节取材 → law_lib_citation 逐篇引注 → 综述草稿（〔待补〕字段提醒核对）
+```
 
 ## 浏览器自动检索（可选增强）
 

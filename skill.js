@@ -32,6 +32,32 @@ const SKILL_CONTENT = `# 知网检索工作流（合规模式）
 - 检索式技巧：SU='合同无效' AND SU='强制性规定'；同句共现用 * 连接（SU='情势变更' * '合同解除'）；精确匹配用单引号，模糊用 %
 `
 
+const WORKBENCH_CONTENT = `# 法学文献库工作流（总结 / 对比 / 综述 / 引注）
+
+用户把知网手动下载的 PDF 交给文献库后（law_lib_add 入库），按以下模式工作。文献全文只在本地，检索与阅读都通过工具完成。
+
+## 单篇精读总结
+1. \`law_lib_read\` part=outline 看结构；无大纲则直接通读。
+2. part=text 按 6000 字窗口滚动通读全文（has_more=true 就继续读，不要跳读）。
+3. 输出法学读书卡片：**研究问题 / 核心论点 / 论证路径（前提→推论→结论）/ 研究方法（教义学·实证·比较法）/ 可引用的关键原文（标注 chunk 位置）**。
+
+## 多文献观点对比
+1. \`law_lib_list\` 掌握库内文献。
+2. 对每个争点用 \`law_lib_search\` 取各文献的相关块（每个争点一轮检索）。
+3. 输出"观点谱系表"：争点 × 作者 → 立场 / 论据 / 分歧根源；引用一律注明 [paper_id] 与 chunk 位置，方便用户回原文核对。
+
+## 文献综述草稿
+1. 先与用户确认综述主题与文献范围。
+2. 按 3~5 个主题分节；每节用 \`law_lib_search\` 取材。
+3. 写作规范：分主题整合而非逐篇罗列；每处观点标注引注；开头交代文献范围与取舍；结尾指出争议焦点与研究空白。
+4. 每篇文献用 \`law_lib_citation\` 生成《法学引注手册》引注（期刊/学位论文类型别选错）；作者、期刊、年份、期号等元数据从题录（cnki_parse_export 结果）或用户提供补全，PDF 本身通常不含；〔待补〕字段提醒用户核对。
+
+## 红线与提示
+- 引用的具体表述必须来自 law_lib_read/search 返回的原文，不得凭记忆改写后当作原文引用。
+- 扫描版 PDF（无文本层）会被拒入库；提示用户换文字版或自行 OCR。
+- 综述是草稿：结构、观点归属由你负责，最终学术判断与文字润色由用户完成，明示这一点。
+`
+
 export function apply(ctx) {
   ctx.skills.register({
     name: 'cnki-search',
@@ -40,5 +66,13 @@ export function apply(ctx) {
     whenToUse:
       '用户要求在知网找文献、查论文、做文献综述检索时使用；配合 cnki_search_url、cnki_parse_export 工具与浏览器工具执行。',
     content: SKILL_CONTENT,
+  })
+  ctx.skills.register({
+    name: 'law-workbench',
+    description:
+      '本地法学文献库工作流：单篇精读总结、多文献观点对比、综述草稿、《法学引注手册》引注生成。',
+    whenToUse:
+      '文献已入库（law_lib_add）后，用户要求总结论文、比较观点异同、写文献综述、生成引注时使用；配合 law_lib_list/search/read/citation 工具。',
+    content: WORKBENCH_CONTENT,
   })
 }
