@@ -4,15 +4,9 @@ import { createCnkiGuard, CNKI_DOWNLOAD_RE } from '../lib/guard-core.js'
 
 let passed = 0
 let failed = 0
+const tests = []
 function test(name, fn) {
-  try {
-    fn()
-    passed++
-    console.log(`PASS ${name}`)
-  } catch (err) {
-    failed++
-    console.error(`FAIL ${name}\n  ${err.message}`)
-  }
+  tests.push([name, fn])
 }
 
 // ---------- 守护核心 ----------
@@ -117,14 +111,26 @@ test('skill.js 注册 cnki-search 运行时技能', async () => {
   assert.equal(mod.name, 'cnki-assist-skill')
   assert.deepEqual(mod.inject, ['skills'])
   mod.apply(ctx)
-  assert.equal(registered.length, 1)
-  const skill = registered[0]
-  assert.equal(skill.name, 'cnki-search')
-  assert.match(skill.name, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'kebab-case 名称')
-  assert.ok(skill.description.length > 10)
-  assert.ok(skill.content.includes('永不点击下载'))
-  assert.ok(skill.content.includes('cnki_parse_export'))
+  assert.equal(registered.length, 2, 'cnki-search + law-workbench 两个技能')
+  assert.equal(registered[0].name, 'cnki-search')
+  assert.match(registered[0].name, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'kebab-case 名称')
+  assert.ok(registered[0].description.length > 10)
+  assert.ok(registered[0].content.includes('永不点击下载'))
+  assert.ok(registered[0].content.includes('cnki_parse_export'))
+  assert.ok(registered[1].content.includes('law_lib_citation'), 'workbench 技能含引注工作流')
 })
+
+// ---------- 执行（async 失败必须算 FAIL） ----------
+for (const [name, fn] of tests) {
+  try {
+    await fn()
+    passed++
+    console.log(`PASS ${name}`)
+  } catch (err) {
+    failed++
+    console.error(`FAIL ${name}\n  ${err.message}`)
+  }
+}
 
 console.log(`\n${passed} passed, ${failed} failed`)
 process.exit(failed ? 1 : 0)
