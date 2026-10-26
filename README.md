@@ -6,7 +6,7 @@
 |---|---|---|
 | `cnki_search_url` | 工具 | 把大白话需求变成知网检索链接：简单关键词 → 结果页直链；专业检索式 → 专业检索页链接。附法学检索策略提示（CSSCI 筛选、被引排序等） |
 | `cnki_parse_export` | 工具 | 解析知网"导出文献"生成的题录 txt（自定义双语标签 / EndNote / RefWorks / 制表符，UTF-8 与 GB18030，含 `\0` 清理），返回结构化论文列表 |
-| 知网访问守护 | 门禁 | `tools/pre-execute` 钩子：拦截指向知网下载端点的浏览器调用（kcms/download、bar/download 等），并限速（默认 12 次/10 分钟、间隔 ≥4 秒），超限自动引导降级到人工导出链路 |
+| 知网访问守护 | 门禁 | `tools/pre-execute` 钩子：拦截指向知网下载端点的浏览器调用（kcms/download、bar/download 等），并限速（默认 12 次/10 分钟、间隔 ≥4 秒），超限自动引导降级到人工导出链路。决策前对参数做 percent-decode 归一化（最多三层），URL 编码（`kcms%2Fdownload`、`filename%3DA.caj`）、反斜杠路径、混合大小写等变体同样命中；下载拦截不消耗限速配额 |
 | `cnki-search` | 技能 | 合规检索工作流：多角度检索式 → 浏览器打开结果页 → 只读题录 → 综合排序输出，含验证码处置、降级链路与精确到按钮的导出步骤 |
 | `law_lib_add` / `list` / `search` / `read` / `citation` / `remove` | 工具（文献库） | 本地文献库：PDF/TXT 入库（pdfjs 中文提取、哈希去重、扫描版拒收提示）、中文 BM25 全文检索（法律概念扩展 + 命中词高亮）、大纲/窗口式阅读（可存阅读进度）、《法学引注手册》与 GB/T 7714 引注生成、移除 |
 | `law_lib_note` / `law_lib_related` | 工具（文献库） | 综述闭环：摘录+批注笔记（随库持久化）；基于标题+开篇 BM25 交叉打分的相关文献推荐（附共现概念词） |
@@ -81,11 +81,15 @@ pnpm pack && dsh plugin --profile web add ./dsh-plugin-cnki-assist-0.1.0.tgz
 
 ```sh
 node test/run.mjs      # 12 项纯逻辑测试（URL/题录解析），无外部依赖
+node test/phase2.mjs   # 8 项守护层测试（下载拦截/限速/配额/入口加载）
 node test/phase3.mjs   # 13 项文献库测试（分块/BM25/PDF/引注/工具注册）
 node test/phase4.mjs   # 14 项 v0.4 测试（概念扩展/高亮/相关推荐/笔记/进度/v1 兼容）
+node test/phase5.mjs   # 10 项管线级守护集成测试（真实会话序列/逃逸向量/误伤排查/混合流量）
 ```
 
-源码结构：`index.js`（工具注册）→ `lib/url.js`（URL 构造）→ `lib/parse-export.js`（编码识别与多格式解析）→ `lib/collection.js`（文献库核心：分块、BM25、概念扩展、笔记与进度）→ `library.js`（文献库工具注册）。
+守护层另经真机验证：无头浏览器只读访问知网（详情页/首页/检索页），收集 100+ 个真实请求 URL 做误伤排查为零误伤；检索页触发安全验证时探针按红线交由人工，不做绕过。
+
+源码结构：`index.js`（工具注册）→ `lib/url.js`（URL 构造）→ `lib/parse-export.js`（编码识别与多格式解析）→ `lib/collection.js`（文献库核心：分块、BM25、概念扩展、笔记与进度）→ `library.js`（文献库工具注册）→ `lib/guard-core.js` + `guard.js`（访问守护：纯函数决策器 + pre-execute 钩子）。
 
 ## License
 
