@@ -1,6 +1,6 @@
 # dsh-plugin-cnki-assist
 
-中国知网（CNKI）法学文献工作台，面向 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness)。覆盖"找文献 → 筛文献 → 读文献 → 写综述"全链路：两个检索工具 + 一层访问守护 + 一个本地文献库（8 个工具）+ 两个技能。
+中国知网（CNKI）法学文献工作台，面向 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness)。覆盖"找文献 → 筛文献 → 读文献 → 写综述"全链路：两个检索工具 + 一层访问守护 + 一个本地文献库（8 个工具）+ 两个技能 + 一个右侧停靠栏可视化面板。**一个包装下全部**——原独立面板包 [dsh-plugin-law-workbench](https://github.com/violin-i/dsh-plugin-law-workbench) 自 v0.5.0 起并入本包。
 
 | 组件 | 类型 | 作用 |
 |---|---|---|
@@ -11,8 +11,9 @@
 | `law_lib_add` / `list` / `search` / `read` / `citation` / `remove` | 工具（文献库） | 本地文献库：PDF/TXT 入库（pdfjs 中文提取、哈希去重、扫描版拒收提示）、中文 BM25 全文检索（法律概念扩展 + 命中词高亮）、大纲/窗口式阅读（可存阅读进度）、《法学引注手册》与 GB/T 7714 引注生成、移除 |
 | `law_lib_note` / `law_lib_related` | 工具（文献库） | 综述闭环：摘录+批注笔记（随库持久化）；基于标题+开篇 BM25 交叉打分的相关文献推荐（附共现概念词） |
 | `law-workbench` | 技能 | 文献库工作流：单篇精读卡片（论点/论证路径/方法/可引原文）、观点谱系对比、综述草稿规范、引注元数据补全提示 |
+| 工作台面板 | UI | 右侧停靠栏可视化面板：文献列表（含笔记数与阅读进度，点击续读）、概念扩展 BM25 检索（命中片段【】高亮 + 显示扩展概念词）、分段阅读（自动存进度）、大纲视图、笔记管理（划选摘录 + 批注，与对话内 `law_lib_note` 互通） |
 
-文献库为**纯本地**实现：BM25 检索（中文 bigram + 内置法律概念同义表扩展）+ 文件型存储（默认 `~/.dsh/law-library/`，可经 profile 的行配置 `libraryDir` 覆盖；v2 格式含笔记与阅读进度，自动兼容 v1），零网络、零 API key、零向量模型——个人文献库规模（几十到上百篇）下检索即时返回，全文不出本机。唯一依赖 `pdfjs-dist` 为纯 JS 包，无构建脚本、无原生模块。
+文献库为**纯本地**实现：BM25 检索（中文 bigram + 内置法律概念同义表扩展）+ 文件型存储（默认 `~/.dsh/law-library/`，可经 profile 的行配置 `libraryDir` 覆盖；v2 格式含笔记与阅读进度，自动兼容 v1），零网络、零 API key、零向量模型——个人文献库规模（几十到上百篇）下检索即时返回，全文不出本机。运行时唯一依赖 `pdfjs-dist` 为纯 JS 包；面板的宿主半与浏览器 bundle 为预构建产物（`lib/workbench.js`、`lib/client.js`）直接入库，安装时无构建脚本、无需 allowBuilds 授权。
 
 ## 文献库使用
 
@@ -58,10 +59,10 @@ dsh plugin --profile web add github:violin-i/dsh-plugin-cnki-assist
 dsh plugin --profile web add ./dsh-plugin-cnki-assist
 
 # 方式三：tarball（无网络环境分发）
-pnpm pack && dsh plugin --profile web add ./dsh-plugin-cnki-assist-0.1.0.tgz
+pnpm pack && dsh plugin --profile web add ./dsh-plugin-cnki-assist-0.5.0.tgz
 ```
 
-启动：`dsh web`，打开 `http://127.0.0.1:3080`。可用 `dsh --profile web --dump-config` 确认出现 `# == dsh-plugin-cnki-assist` 层。
+启动：`dsh web`，打开 `http://127.0.0.1:3080`。可用 `dsh --profile web --dump-config` 确认出现 `# == dsh-plugin-cnki-assist` 层。安装后重启 dsh，右侧停靠栏的引导页（+ 新增控件）里会出现"工作台"入口。
 
 适配版本：dsh `>=0.2.0 <0.3.0`（开发者预览期，破坏性变更风险自担）。
 
@@ -85,11 +86,12 @@ node test/phase2.mjs   # 8 项守护层测试（下载拦截/限速/配额/入�
 node test/phase3.mjs   # 13 项文献库测试（分块/BM25/PDF/引注/工具注册）
 node test/phase4.mjs   # 14 项 v0.4 测试（概念扩展/高亮/相关推荐/笔记/进度/v1 兼容）
 node test/phase5.mjs   # 10 项管线级守护集成测试（真实会话序列/逃逸向量/误伤排查/混合流量）
+pnpm run build && node test/ui.mjs   # 12 项 UI 双侧测试（7 路由/概念扩展命中/笔记/进度/Bundle 协议/tab 注册/SSR）
 ```
 
 守护层另经真机验证：无头浏览器只读访问知网（详情页/首页/检索页），收集 100+ 个真实请求 URL 做误伤排查为零误伤；检索页触发安全验证时探针按红线交由人工，不做绕过。
 
-源码结构：`index.js`（工具注册）→ `lib/url.js`（URL 构造）→ `lib/parse-export.js`（编码识别与多格式解析）→ `lib/collection.js`（文献库核心：分块、BM25、概念扩展、笔记与进度）→ `library.js`（文献库工具注册）→ `lib/guard-core.js` + `guard.js`（访问守护：纯函数决策器 + pre-execute 钩子）。
+源码结构：`index.js`（工具注册）→ `lib/url.js`（URL 构造）→ `lib/parse-export.js`（编码识别与多格式解析）→ `lib/collection.js`（文献库核心：分块、BM25、概念表、高亮、笔记与进度——**同时被工具半与面板宿主半引用的单一事实源**）→ `library.js`（文献库工具注册）→ `lib/guard-core.js` + `guard.js`（访问守护：纯函数决策器 + pre-execute 钩子）→ `src/host/`（工作台面板宿主半：7 条 fetch 路由，tsdown 构建为 `lib/workbench.js`）→ `src/client/`（面板浏览器 bundle，构建为 `lib/client.js`）。
 
 ## License
 

@@ -1,14 +1,17 @@
 {
   "name": "dsh-plugin-cnki-assist",
-  "version": "0.4.1",
-  "description": "CNKI (中国知网) 法学文献工作台 for DeepSeek Harness：检索链接生成、题录导出解析、知网访问守护、本地文献库（PDF入库/概念扩展BM25检索/笔记/阅读进度/相关文献推荐/法学引注手册引注）。面向法学等文科文献综述场景。",
+  "version": "0.5.0",
+  "description": "CNKI (中国知网) 法学文献工作台 for DeepSeek Harness（整合包）：检索链接生成、题录导出解析、知网访问守护、本地文献库（PDF入库/概念扩展BM25检索/笔记/阅读进度/相关文献推荐/法学引注手册引注），附右侧停靠栏工作台可视化面板（列表/检索高亮/续读/大纲/笔记）。面向法学等文科文献综述场景。",
   "type": "module",
   "main": "index.js",
   "exports": {
     ".": "./index.js",
     "./guard": "./guard.js",
     "./skill": "./skill.js",
-    "./library": "./library.js"
+    "./library": "./library.js",
+    "./workbench": "./lib/workbench.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
   },
   "files": [
     "index.js",
@@ -16,6 +19,7 @@
     "skill.js",
     "library.js",
     "lib/",
+    "icon.svg",
     "cordis.patch.yml",
     "README.md"
   ],
@@ -28,7 +32,12 @@
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.5",
-    "@deepseek-ai/dsh-tools": "0.2.1-rc.3"
+    "@deepseek-ai/dsh-tools": "0.2.1-rc.3",
+    "@types/node": "^22.10.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsdown": "^0.23.0",
+    "typescript": "^5.9.3"
   },
   "keywords": [
     "dsh-plugin",
@@ -36,13 +45,24 @@
     "知网",
     "law",
     "literature",
-    "rag"
+    "rag",
+    "workbench"
   ],
   "license": "MIT",
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ]
     }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "test": "node test/run.mjs && node test/phase2.mjs && node test/phase3.mjs && node test/phase4.mjs && node test/phase5.mjs && node test/ui.mjs"
   },
   "dependencies": {
     "pdfjs-dist": "4.10.38"

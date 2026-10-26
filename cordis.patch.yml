@@ -7,3 +7,7 @@
       name: dsh-plugin-cnki-assist/skill
     - id: law-library
       name: dsh-plugin-cnki-assist/library
+    # 工作台面板宿主半：注册读取/回写共享文献库的 API 路由；
+    # dsh.client 声明（package.json）让 Web 应用加载 ./client 浏览器 bundle（侧边栏 tab + 面板）
+    - id: law-workbench
+      name: dsh-plugin-cnki-assist/workbench
