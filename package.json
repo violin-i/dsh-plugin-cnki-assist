@@ -1,7 +1,7 @@
 {
   "name": "dsh-plugin-cnki-assist",
-  "version": "0.3.0",
-  "description": "CNKI (中国知网) 法学文献工作台 for DeepSeek Harness：检索链接生成、题录导出解析、知网访问守护、本地文献库（PDF入库/BM25检索/阅读/法学引注手册引注）。面向法学等文科文献综述场景。",
+  "version": "0.4.0",
+  "description": "CNKI (中国知网) 法学文献工作台 for DeepSeek Harness：检索链接生成、题录导出解析、知网访问守护、本地文献库（PDF入库/概念扩展BM25检索/笔记/阅读进度/相关文献推荐/法学引注手册引注）。面向法学等文科文献综述场景。",
   "type": "module",
   "main": "index.js",
   "exports": {

@@ -154,7 +154,7 @@ await atest('中文 PDF 入库与检索（reportlab 生成样本）', async () =
 })
 
 // ---------- library.js 工具注册与端到端执行 ----------
-await atest('library.js 注册 6 个工具并端到端执行', async () => {
+await atest('library.js 注册 8 个工具并端到端执行', async () => {
   const registered = []
   const ctx = { tools: { register: (t) => registered.push(t) } }
   const mod = await import('../library.js')
@@ -166,7 +166,9 @@ await atest('library.js 注册 6 个工具并端到端执行', async () => {
     'law_lib_add',
     'law_lib_citation',
     'law_lib_list',
+    'law_lib_note',
     'law_lib_read',
+    'law_lib_related',
     'law_lib_remove',
     'law_lib_search',
   ])
