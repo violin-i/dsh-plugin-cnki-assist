@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "CNKI literature workbench",
+    "description": "Turn plain-language requests into CNKI search links, parse exported bibliographies, and run a local full-text law library with concept-aware search, notes, citations, and a sidebar workbench panel."
+  }
+}

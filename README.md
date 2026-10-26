@@ -1,5 +1,7 @@
 # dsh-plugin-cnki-assist
 
+[![test](https://github.com/violin-i/dsh-plugin-cnki-assist/actions/workflows/test.yml/badge.svg)](https://github.com/violin-i/dsh-plugin-cnki-assist/actions/workflows/test.yml)
+
 中国知网（CNKI）法学文献工作台，面向 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness)。覆盖"找文献 → 筛文献 → 读文献 → 写综述"全链路：两个检索工具 + 一层访问守护 + 一个本地文献库（8 个工具）+ 两个技能 + 一个右侧停靠栏可视化面板。**一个包装下全部**——原独立面板包 [dsh-plugin-law-workbench](https://github.com/violin-i/dsh-plugin-law-workbench) 自 v0.5.0 起并入本包。
 
 | 组件 | 类型 | 作用 |
